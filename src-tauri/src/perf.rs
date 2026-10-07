@@ -1,5 +1,6 @@
 //! Startup and render timing. Enabled by setting `MDV_PERF` to a log file
-//! path; each line is `<ms since process start> <label>`.
+//! path; each line is `<unix ms> <ms since start> <label>`, so an outside
+//! script can also measure from the moment it launched the process.
 
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -24,7 +25,11 @@ pub fn enabled() -> bool {
 
 pub fn mark(label: &str) {
     if let Some(Some(path)) = LOG.get() {
-        let line = format!("{:.1} {label}\n", elapsed_ms());
+        let epoch = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis())
+            .unwrap_or(0);
+        let line = format!("{epoch} {:.1} {label}\n", elapsed_ms());
         if let Ok(mut f) = OpenOptions::new().create(true).append(true).open(path) {
             let _ = f.write_all(line.as_bytes());
         }

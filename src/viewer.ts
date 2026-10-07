@@ -75,6 +75,15 @@ export function setContent(article: HTMLElement, html: string, docId: number, mo
   next.append(frag);
   morphdom(article, next, {
     childrenOnly: true,
+    // morphdom removes any element with an id that's missing from the new
+    // HTML, even inside a subtree we told it to skip. Rendered diagrams carry
+    // generated ids, so they must not count as keys.
+    getNodeKey(node) {
+      if (node.nodeType !== Node.ELEMENT_NODE) return undefined;
+      const el = node as Element;
+      if (!el.id || el.closest("pre.mermaid")) return undefined;
+      return el.id;
+    },
     onBeforeElUpdated(from, to) {
       // A rendered diagram whose source hasn't changed: keep the SVG.
       if (from.classList.contains("mermaid") && from.getAttribute("data-hash") === to.getAttribute("data-hash")) {

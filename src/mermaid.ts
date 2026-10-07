@@ -71,19 +71,41 @@ function configure(mermaid: Mermaid, dark: boolean) {
   });
 }
 
+let nextId = 0;
+
+/**
+ * Renders diagrams that haven't been drawn yet. Uses mermaid.render, which
+ * returns SVG text, rather than mermaid.run, so only this code ever writes
+ * into a diagram element. Each node is claimed before the first await, so
+ * overlapping calls can't draw the same diagram twice.
+ */
 export async function renderDiagrams(root: ParentNode, dark: boolean) {
   const nodes = [...root.querySelectorAll<HTMLElement>(PENDING)];
   if (!nodes.length) return;
+  for (const n of nodes) {
+    n.setAttribute("data-processed", "pending");
+    n.dataset.src = n.textContent ?? "";
+  }
   const mermaid = await load();
   configure(mermaid, dark);
-  // The node may have been replaced by a newer render while we waited.
-  const live = nodes.filter((n) => n.isConnected && !n.hasAttribute("data-processed"));
-  for (const n of live) n.dataset.src = n.textContent ?? "";
-  try {
-    await mermaid.run({ nodes: live });
-  } catch {
-    for (const n of live) {
-      if (!n.querySelector("svg")) n.classList.add("mermaid-error");
+  for (const n of nodes) {
+    const src = n.dataset.src ?? "";
+    const id = `mdv-diagram-${++nextId}`;
+    try {
+      const { svg } = await mermaid.render(id, src);
+      // Skip if a newer render replaced this diagram while we waited.
+      if (n.dataset.src !== src) continue;
+      n.innerHTML = svg;
+      n.classList.remove("mermaid-error");
+      n.setAttribute("data-processed", "true");
+    } catch (e) {
+      // Mermaid leaves its scratch element behind when a diagram fails.
+      document.getElementById(`d${id}`)?.remove();
+      document.getElementById(id)?.remove();
+      if (n.dataset.src !== src) continue;
+      n.textContent = `${src}\n\n${e instanceof Error ? e.message : String(e)}`;
+      n.classList.add("mermaid-error");
+      n.setAttribute("data-processed", "error");
     }
   }
 }

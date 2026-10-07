@@ -100,6 +100,30 @@ pub fn create_window(app: &AppHandle, paths: Vec<PathBuf>) -> tauri::Result<Webv
     Ok(window)
 }
 
+/// Asks WebView2 to release memory while a window is parked in the background.
+#[cfg(windows)]
+pub fn set_low_memory(window: &WebviewWindow, low: bool) {
+    let _ = window.with_webview(move |wv| unsafe {
+        use webview2_com::Microsoft::Web::WebView2::Win32::{
+            ICoreWebView2_19, COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_LOW, COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_NORMAL,
+        };
+        use windows_core::Interface;
+        if let Ok(core) = wv.controller().CoreWebView2() {
+            if let Ok(core) = core.cast::<ICoreWebView2_19>() {
+                let level = if low { COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_LOW } else { COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_NORMAL };
+                let _ = core.SetMemoryUsageTargetLevel(level);
+            }
+        }
+    });
+}
+
+#[cfg(not(windows))]
+pub fn set_low_memory(_window: &WebviewWindow, _low: bool) {}
+
+fn is_parked(window: &WebviewWindow) -> bool {
+    !window.is_visible().unwrap_or(true)
+}
+
 pub fn show(window: &WebviewWindow) {
     let state = window.state::<AppState>();
     let maximize = {
@@ -110,6 +134,9 @@ pub fn show(window: &WebviewWindow) {
     };
     if maximize {
         let _ = window.maximize();
+    }
+    if is_parked(window) {
+        set_low_memory(window, false);
     }
     let _ = window.show();
     let _ = window.set_focus();
@@ -141,11 +168,13 @@ pub fn open_from_os(app: &AppHandle, paths: Vec<PathBuf>) {
     }
 
     let target = lock(&state.last_focused).clone().and_then(|l| app.get_webview_window(&l));
+    let parked = target.as_ref().is_some_and(is_parked);
     if fresh.is_empty() {
         if activated {
             return;
         }
         match target {
+            Some(w) if parked => show(&w),
             Some(w) => focus(&w),
             None => {
                 let _ = create_window(app, fresh);
@@ -154,11 +183,16 @@ pub fn open_from_os(app: &AppHandle, paths: Vec<PathBuf>) {
         return;
     }
     let new_window = lock(&state.settings).open_in == "window";
-    if let (Some(w), false) = (&target, new_window) {
-        let list: Vec<String> = fresh.iter().map(|p| p.to_string_lossy().into_owned()).collect();
-        let _ = w.emit_to(w.label(), "open-paths", list);
-        focus(w);
-        return;
+    if let Some(w) = &target {
+        if parked || !new_window {
+            let list: Vec<String> = fresh.iter().map(|p| p.to_string_lossy().into_owned()).collect();
+            let _ = w.emit_to(w.label(), "open-paths", list);
+            // A parked window shows itself once the files are rendered.
+            if !parked {
+                focus(w);
+            }
+            return;
+        }
     }
     let _ = create_window(app, fresh);
 }

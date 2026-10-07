@@ -246,6 +246,27 @@ pub async fn new_window(app: AppHandle) -> Result<(), String> {
     windows::create_window(&app, Vec::new()).map(|_| ()).map_err(|e| e.to_string())
 }
 
+/// Called when the last window is closing. With "keep running" on, the
+/// window is hidden instead and kept warm for the next file. Returns whether
+/// it was parked.
+#[tauri::command]
+pub async fn park_window(app: AppHandle, window: WebviewWindow, state: State<'_, AppState>) -> Result<bool, ()> {
+    if !lock(&state.settings).keep_running {
+        return Ok(false);
+    }
+    let others = app
+        .webview_windows()
+        .values()
+        .any(|w| w.label() != window.label() && w.is_visible().unwrap_or(false));
+    if others {
+        return Ok(false);
+    }
+    let _ = window.hide();
+    windows::set_low_memory(&window, true);
+    crate::perf::mark("window parked");
+    Ok(true)
+}
+
 #[tauri::command]
 pub async fn window_ready(window: WebviewWindow) -> Result<(), ()> {
     windows::show(&window);

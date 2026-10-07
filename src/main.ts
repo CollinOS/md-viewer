@@ -375,10 +375,13 @@ async function save(tab: Tab | null = active): Promise<boolean> {
   const state = editorStateOf(tab);
   // Don't trust tab.dirty here: it only updates after the preview re-renders,
   // and Ctrl+S can arrive right after a keystroke.
-  if (!state || !tab.savedDoc || state.doc.eq(tab.savedDoc)) return true;
+  const unchanged = !state || !tab.savedDoc || state.doc.eq(tab.savedDoc);
+  // A deleted file can be written back even without edits.
+  if (unchanged && !tab.missing) return true;
   try {
-    const res = await api.save(tab.id, state.doc.toString());
-    tab.savedDoc = state.doc;
+    const text = state ? state.doc.toString() : await api.getText(tab.id);
+    const res = await api.save(tab.id, text);
+    if (state) tab.savedDoc = state.doc;
     tab.diskHtml = undefined;
     tab.missing = false;
     removeBanner(tab);
@@ -595,7 +598,12 @@ void getCurrentWebview().onDragDropEvent((e) => {
   if (p.type === "drop" && p.paths.length) void openPaths(p.paths);
 });
 
-void appWindow.listen<string[]>("open-paths", (e) => void openPaths(e.payload));
+void appWindow.listen<string[]>("open-paths", async (e) => {
+  await openPaths(e.payload);
+  // A parked window was waiting hidden; show it now that the file is in.
+  if (!(await appWindow.isVisible())) await api.windowReady();
+  requestAnimationFrame(() => mark("frontend: opened from os"));
+});
 void appWindow.listen<number>("activate-doc", (e) => activateById(e.payload));
 void appWindow.listen<{ id: number; html: string }>("doc-changed", (e) => onDiskChange(e.payload.id, e.payload.html));
 void appWindow.listen<number>("doc-missing", (e) => onDiskMissing(e.payload));
@@ -603,7 +611,10 @@ void appWindow.listen<ReturnType<typeof settings>>("settings-changed", (e) => ap
 
 void appWindow.onCloseRequested(async (e) => {
   const dirty = tabs.filter((t) => t.dirty);
-  if (!dirty.length) return;
+  if (!dirty.length) {
+    await park(e);
+    return;
+  }
   const names = dirty.map((t) => t.name).join(", ");
   const choice = await ask(
     dirty.length === 1 ? `Save changes to ${names}?` : `Save changes to ${dirty.length} files?`,
@@ -627,7 +638,24 @@ void appWindow.onCloseRequested(async (e) => {
       }
     }
   }
+  await park(e);
 });
+
+/** With "stay ready in the background", the last window hides instead of closing. */
+async function park(e: { preventDefault(): void }) {
+  if (!settings().keepRunning || !(await api.parkWindow())) return;
+  e.preventDefault();
+  for (const t of tabs) {
+    closedPaths.push(t.path);
+    t.button.remove();
+    void api.closeDoc(t.id);
+  }
+  tabs.length = 0;
+  active = null;
+  docHost.replaceChildren();
+  layout();
+  updateTitle();
+}
 
 // ---------- Startup ----------
 
@@ -660,6 +688,7 @@ const testHooks = {
   ready: false,
   tabs: () => tabs.map((t) => ({ id: t.id, name: t.name, path: t.path, dirty: t.dirty, editing: t.editing, missing: t.missing, active: t === active })),
   editorText: () => (active ? editorStateOf(active)?.doc.toString() : undefined),
+  openPaths: (paths: string[]) => openPaths(paths).then(() => undefined),
 };
 window.__mdv = testHooks;
 

@@ -34,6 +34,7 @@ await test("renders diagrams, and only loads Mermaid when a document has one", a
     const labels = await page.evaluate(() => document.querySelector("pre.mermaid svg").textContent);
     assert(labels.includes("Start") && labels.includes("Choice"), `diagram labels: ${labels}`);
     assert(await mermaidLoaded(page), "Mermaid chunk loaded");
+    eq(await page.evaluate(() => document.querySelectorAll("body > :not(.app, .toasts, .drop-overlay, dialog)").length), 0, "no leftover render elements");
     await page.evaluate(() => document.querySelector("pre.mermaid").scrollIntoView());
     await page.screenshot({ path: path.join(shots, "mermaid-light.png") });
   } finally {
@@ -82,6 +83,8 @@ await test("a broken diagram shows an error without breaking the page", async ()
       { timeout: 15000, message: "diagram attempt finished" },
     );
     assert(await page.evaluate(() => document.querySelector(".markdown-body").textContent.includes("After the diagram.")), "rest of page intact");
+    await sleep(300);
+    eq(await page.evaluate(() => document.querySelectorAll("body > :not(.app, .toasts, .drop-overlay, dialog)").length), 0, "no leftover render elements");
   } finally {
     await app.close();
   }

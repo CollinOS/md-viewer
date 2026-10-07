@@ -2143,6 +2143,8 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tempfile",
  "two-face",
+ "webview2-com",
+ "windows-core",
  "winreg",
  "xxhash-rust",
 ]

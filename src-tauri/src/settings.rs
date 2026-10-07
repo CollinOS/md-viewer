@@ -40,6 +40,8 @@ pub struct Settings {
     pub code_font: String,
     /// "tab" or "window"
     pub open_in: String,
+    /// Hide the last window instead of exiting, so the next file opens instantly.
+    pub keep_running: bool,
     pub window: WindowGeometry,
 }
 
@@ -55,6 +57,7 @@ impl Default for Settings {
             body_font: "sans".into(),
             code_font: String::new(),
             open_in: "tab".into(),
+            keep_running: false,
             window: WindowGeometry::default(),
         }
     }

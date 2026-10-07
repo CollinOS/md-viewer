@@ -15,7 +15,8 @@ const suites = fs
 let failed = 0;
 for (const suite of suites) {
   console.log(`\n${suite}`);
-  const r = spawnSync(process.execPath, [path.join(dir, suite)], { stdio: "inherit" });
+  const r = spawnSync(process.execPath, [path.join(dir, suite)], { stdio: "inherit", timeout: 600_000 });
+  if (r.error) console.log(`  FAIL  ${suite} did not finish: ${r.error.message}`);
   if (r.status !== 0) failed++;
 }
 console.log(failed ? `\n${failed} suite(s) failed` : "\nAll suites passed");

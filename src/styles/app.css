@@ -458,3 +458,4 @@ dialog::backdrop { background: rgb(0 0 0 / 0.35); }
 }
 .link-btn:disabled { color: var(--fg-muted); cursor: default; }
 .preview-pane:focus { outline: none; }
+.settings input[type="checkbox"] { width: 16px; height: 16px; flex: none; accent-color: var(--accent); }

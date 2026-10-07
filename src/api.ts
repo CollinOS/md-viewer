@@ -20,6 +20,7 @@ export interface Settings {
   bodyFont: "sans" | "serif" | "mono";
   codeFont: string;
   openIn: "tab" | "window";
+  keepRunning: boolean;
   window: WindowGeometry;
 }
 
@@ -65,6 +66,7 @@ export const api = {
   saveSettings: (settings: Settings) => invoke<void>("save_settings", { settings }),
   newWindow: () => invoke<void>("new_window"),
   windowReady: () => invoke<void>("window_ready"),
+  parkWindow: () => invoke<boolean>("park_window"),
   perfMark: (label: string) => invoke<void>("perf_mark", { label }),
 };
 

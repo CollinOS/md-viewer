@@ -48,6 +48,7 @@ pub fn run() {
             commands::save_settings,
             commands::new_window,
             commands::window_ready,
+            commands::park_window,
             commands::perf_mark,
         ])
         .setup(move |app| {

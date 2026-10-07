@@ -199,6 +199,9 @@ function build(): HTMLDialogElement {
     (v) => updateSettings({ openIn: v }),
   );
 
+  const keepRunning = el("input", { type: "checkbox", checked: current.keepRunning });
+  keepRunning.addEventListener("change", () => updateSettings({ keepRunning: keepRunning.checked }));
+
   const content = el(
     "div",
     { className: "content" },
@@ -215,7 +218,17 @@ function build(): HTMLDialogElement {
       row("Body font", bodyFont.node),
       row("Code font", codeFont, "Leave empty for the default"),
     ),
-    el("section", {}, el("h3", { textContent: "Files" }), row("Open files from Explorer in", openIn.node)),
+    el(
+      "section",
+      {},
+      el("h3", { textContent: "Files" }),
+      row("Open files from Explorer in", openIn.node),
+      row(
+        "Stay ready in the background",
+        keepRunning,
+        "After the last window closes, keep the app loaded so files open almost instantly. Uses some memory while idle.",
+      ),
+    ),
   );
 
   d.append(el("header", {}, el("h2", { textContent: "Settings" }), close), content);

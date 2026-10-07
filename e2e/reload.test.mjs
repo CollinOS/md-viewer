@@ -84,6 +84,14 @@ await test("shows a banner when the file is deleted and recovers when it returns
     // Same content as before the delete: must still clear the missing state.
     fs.writeFileSync(other, saved);
     await waitUntil(() => page.evaluate(() => !document.querySelector(".banner")), { message: "restored" });
+
+    // Ctrl+S on a deleted file writes it back, even without edits.
+    fs.unlinkSync(other);
+    await waitUntil(() => page.evaluate(() => window.__mdv.tabs()[0].missing), { message: "missing again" });
+    await page.keyboard.press("Control+S");
+    await waitUntil(() => fs.existsSync(other), { message: "file recreated by save" });
+    eq(fs.readFileSync(other).equals(saved), true, "recreated with the same bytes");
+    await waitUntil(() => page.evaluate(() => !window.__mdv.tabs()[0].missing), { message: "missing cleared" });
     const r = await page.evaluate(() => ({ banner: !!document.querySelector(".banner"), missing: window.__mdv.tabs()[0].missing }));
     eq(r, { banner: false, missing: false }, "banner cleared");
   } finally {
