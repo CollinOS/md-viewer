@@ -82,7 +82,7 @@ function editorStateOf(tab: Tab): EditorState | undefined {
 }
 
 function updateTitle() {
-  const name = active ? `${active.dirty ? "â— " : ""}${active.name} - MD Viewer` : "MD Viewer";
+  const name = active ? `${active.dirty ? "● " : ""}${active.name} - MD Viewer` : "MD Viewer";
   document.title = name;
   void appWindow.setTitle(name);
 }
@@ -373,7 +373,9 @@ async function toggleEdit(tab: Tab | null = active) {
 async function save(tab: Tab | null = active): Promise<boolean> {
   if (!tab) return false;
   const state = editorStateOf(tab);
-  if (!state || !tab.dirty) return true;
+  // Don't trust tab.dirty here: it only updates after the preview re-renders,
+  // and Ctrl+S can arrive right after a keystroke.
+  if (!state || !tab.savedDoc || state.doc.eq(tab.savedDoc)) return true;
   try {
     const res = await api.save(tab.id, state.doc.toString());
     tab.savedDoc = state.doc;
