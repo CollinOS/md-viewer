@@ -106,7 +106,7 @@ function segmented<T extends string>(options: [T, string][], value: () => T, onP
 
 function themeGrid(slot: "lightTheme" | "darkTheme") {
   const grid = el("div", { className: "theme-grid" });
-  const cards = THEMES.map((t) => {
+  const cards = THEMES.filter((t) => t.dark === (slot === "darkTheme")).map((t) => {
     const [bg, fg, accent, kw, str] = t.swatch;
     const preview = el("div", { className: "preview" });
     preview.style.background = bg;

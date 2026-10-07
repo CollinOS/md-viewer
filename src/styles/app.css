@@ -163,6 +163,7 @@ button {
 }
 .icon-btn:hover { background: var(--bg-hover); color: var(--fg-strong); }
 .icon-btn[aria-pressed="true"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .icon-btn:disabled { opacity: 0.35; pointer-events: none; }
 .icon-btn svg { width: 16px; height: 16px; }
 
