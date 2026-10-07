@@ -51,10 +51,10 @@ await test("highlights code with theme classes", async () => {
     const r = await page.evaluate(() => {
       const rust = document.querySelector("code.language-rust");
       const ts = document.querySelector("code.language-typescript");
-      const kw = rust.querySelector(".hl-storage, .hl-keyword");
+      const kw = rust.querySelector("hl-k");
       return {
-        rustSpans: rust.querySelectorAll("span[class^=hl-]").length,
-        tsSpans: ts.querySelectorAll("span[class^=hl-]").length,
+        rustSpans: rust.querySelectorAll("hl-k, hl-s, hl-f, hl-t, hl-n, hl-c").length,
+        tsSpans: ts.querySelectorAll("hl-k, hl-s, hl-f, hl-t, hl-n, hl-c").length,
         kwColor: getComputedStyle(kw).color,
         bodyColor: getComputedStyle(rust).color,
         inline: !!rust.querySelector("[style]"),

@@ -110,6 +110,12 @@
 .markdown-body img[align="left"] { padding-right: 20px; }
 
 .markdown-body code,
+.markdown-body tt,
+.markdown-body pre {
+  font-variant-ligatures: none;
+}
+
+.markdown-body code,
 .markdown-body tt {
   padding: 0.2em 0.4em;
   margin: 0;

@@ -15,8 +15,10 @@ use comrak::html::escape;
 use comrak::nodes::{NodeValue, Sourcepos};
 use comrak::options::Plugins;
 use comrak::{format_html_with_plugins, parse_document, Arena, Options};
-use syntect::html::{ClassStyle, ClassedHTMLGenerator};
-use syntect::parsing::SyntaxSet;
+use syntect::highlighting::{
+    Color, HighlightIterator, HighlightState, Highlighter as ScopeHighlighter, StyleModifier, Theme, ThemeItem, ThemeSettings,
+};
+use syntect::parsing::{ParseState, ScopeStack, SyntaxSet};
 use syntect::util::LinesWithEndings;
 
 /// Code blocks larger than this are shown unhighlighted. A single huge block
@@ -29,7 +31,53 @@ const PARALLEL_MIN_BYTES: usize = 24 * 1024;
 /// The cache is cleared when it grows past this.
 const CACHE_LIMIT_BYTES: usize = 48 * 1024 * 1024;
 
-pub const CLASS_PREFIX: &str = "hl-";
+/// Short names for highlighted tokens, emitted as custom elements like
+/// `<hl-k>fn</hl-k>`, which is about half the size of a classed span.
+/// Index 0 is plain text and gets no element.
+const TOKEN_CLASSES: [&str; 17] = ["", "c", "k", "s", "e", "n", "f", "t", "v", "g", "a", "h", "b", "i", "ins", "del", "x"];
+
+/// Which scopes map to which token class. syntect picks the most specific
+/// match, so e.g. `storage.type` wins over `storage`.
+const TOKEN_RULES: &[(u8, &str)] = &[
+    (1, "comment, punctuation.definition.comment"),
+    (2, "keyword, storage"),
+    (0, "keyword.operator, punctuation.accessor"),
+    (3, "string"),
+    (4, "string.regexp, constant.character.escape"),
+    (5, "constant, support.constant"),
+    (6, "entity.name.function, support.function, variable.function, meta.diff.range, meta.diff.header"),
+    (
+        7,
+        "entity.name.type, entity.name.class, entity.name.struct, entity.name.enum, entity.name.trait,          entity.other.inherited-class, support.type, support.class",
+    ),
+    (8, "variable.parameter, variable.language"),
+    (9, "entity.name.tag"),
+    (10, "entity.other.attribute-name, support.type.property-name, meta.mapping.key string"),
+    (11, "markup.heading"),
+    (12, "markup.bold"),
+    (13, "markup.italic"),
+    (14, "markup.inserted"),
+    (15, "markup.deleted"),
+    (16, "invalid"),
+];
+
+/// A syntect theme whose "colors" are token class indexes. Highlighting
+/// through it gives one flat span per token instead of nested spans for
+/// every scope, which keeps the HTML several times smaller.
+fn token_theme() -> &'static Theme {
+    static THEME: OnceLock<Theme> = OnceLock::new();
+    THEME.get_or_init(|| Theme {
+        settings: ThemeSettings { foreground: Some(Color { r: 0, g: 0, b: 0, a: 255 }), ..Default::default() },
+        scopes: TOKEN_RULES
+            .iter()
+            .map(|(class, selector)| ThemeItem {
+                scope: selector.parse().expect("valid scope selector"),
+                style: StyleModifier { foreground: Some(Color { r: *class, g: 0, b: 0, a: 255 }), background: None, font_style: None },
+            })
+            .collect(),
+        ..Default::default()
+    })
+}
 
 static SYNTAXES: OnceLock<SyntaxSet> = OnceLock::new();
 
@@ -85,13 +133,34 @@ fn highlight(lang: &str, code: &str) -> String {
     let Some(syntax) = ss.find_syntax_by_token(lang) else {
         return escaped(code);
     };
-    let mut gen = ClassedHTMLGenerator::new_with_class_style(syntax, ss, ClassStyle::SpacedPrefixed { prefix: CLASS_PREFIX });
+    let highlighter = ScopeHighlighter::new(token_theme());
+    let mut parse = ParseState::new(syntax);
+    let mut state = HighlightState::new(&highlighter, ScopeStack::new());
+    let mut out = String::with_capacity(code.len() + code.len() / 2);
+    let mut open = 0u8;
     for line in LinesWithEndings::from(code) {
-        if gen.parse_html_for_line_which_includes_newline(line).is_err() {
+        let Ok(ops) = parse.parse_line(line, ss) else {
             return escaped(code);
+        };
+        for (style, text) in HighlightIterator::new(&mut state, &ops, line, &highlighter) {
+            // Whitespace joins the current span, so runs merge into fewer spans.
+            let class = if text.trim().is_empty() { open } else { style.foreground.r };
+            if class != open {
+                if open != 0 {
+                    let _ = write!(out, "</hl-{}>", TOKEN_CLASSES[open as usize]);
+                }
+                if let Some(name) = TOKEN_CLASSES.get(class as usize).filter(|n| !n.is_empty()) {
+                    let _ = write!(out, "<hl-{name}>");
+                }
+                open = class;
+            }
+            let _ = escape(&mut out, text);
         }
     }
-    gen.finalize()
+    if open != 0 {
+        let _ = write!(out, "</hl-{}>", TOKEN_CLASSES[open as usize]);
+    }
+    out
 }
 
 struct Job {
@@ -299,16 +368,45 @@ mod tests {
     fn code_is_highlighted_with_classes() {
         let html = render("```rust\nfn main() {}\n```\n", false);
         assert!(html.contains(r#"class="language-rust""#), "{html}");
-        assert!(html.contains("hl-keyword") || html.contains("hl-storage"), "{html}");
+        assert!(html.contains("<hl-k>fn </hl-k>"), "{html}");
         assert!(!html.contains("style="), "{html}");
     }
 
     #[test]
     fn extended_syntaxes_are_available() {
-        for lang in ["ts", "typescript", "toml", "dockerfile"] {
-            let html = render(&format!("```{lang}\nlet x = 1\n```\n"), false);
-            assert!(html.contains("hl-source"), "{lang} not highlighted: {html}");
+        for (lang, code) in [("ts", "const x = 1"), ("typescript", "let y = \"s\""), ("toml", "x = 1"), ("dockerfile", "FROM alpine")] {
+            let html = render(&format!("```{lang}\n{code}\n```\n"), false);
+            assert!(html.contains("<hl-"), "{lang} not highlighted: {html}");
         }
+    }
+
+    #[test]
+    fn token_classes_cover_common_scopes() {
+        let md = "```rust\n// note\nstruct P;\nfn f(x: u32) -> P { \"hi\".to_string(); 42 }\n```\n";
+        let html = render(md, false);
+        for tag in ["hl-c", "hl-k", "hl-s", "hl-n", "hl-f", "hl-t", "hl-v"] {
+            assert!(html.contains(&format!("<{tag}>")), "missing {tag}: {html}");
+        }
+        // Flat output: token elements never nest.
+        let code = html.split("<code").nth(1).unwrap();
+        let mut depth = 0;
+        for part in code.split('<').skip(1) {
+            if part.starts_with("hl-") {
+                depth += 1;
+                assert!(depth == 1, "nested token elements: {html}");
+            } else if part.starts_with("/hl-") {
+                depth -= 1;
+            }
+        }
+    }
+
+    #[test]
+    fn highlighted_html_stays_compact() {
+        let code = "fn compute(input: &[u32]) -> u64 {\n    let mut total = 0u64;\n    for v in input { total += *v as u64; }\n    total\n}\n".repeat(50);
+        let md = format!("```rust\n{code}```\n");
+        let html = render(&md, false);
+        let ratio = html.len() as f64 / md.len() as f64;
+        assert!(ratio < 2.6, "html is {ratio:.1}x the markdown");
     }
 
     #[test]
@@ -358,45 +456,25 @@ mod tests {
     fn parallel_and_cached_output_match_sequential() {
         let mut md = String::new();
         for i in 0..200 {
-            md.push_str(&format!("## Block {i}
-
-```rust
-fn f{i}() -> u32 {{ {i} }}
-```
-
-```python
-def g{i}():
-    return {i}
-```
-
-"));
+            md.push_str(&format!(
+                "## Block {i}\n\n```rust\nfn f{i}() -> u32 {{ {i} }}\n```\n\n```python\ndef g{i}():\n    return {i}\n```\n\n"
+            ));
         }
-        md.push_str("```rust
-fn f0() -> u32 { 0 }
-```
-"); // duplicate block
+        md.push_str("```rust\nfn f0() -> u32 { 0 }\n```\n"); // duplicate block
         clear_cache();
         let first = render(&md, false);
         let cached = render(&md, false);
         assert_eq!(first, cached);
         // Same output as highlighting each block on its own.
         for i in [0, 57, 199] {
-            let single = render(&format!("```rust
-fn f{i}() -> u32 {{ {i} }}
-```
-"), false);
-            let block = single.trim();
-            assert!(first.contains(block), "block {i} differs");
+            let single = render(&format!("```rust\nfn f{i}() -> u32 {{ {i} }}\n```\n"), false);
+            assert!(first.contains(single.trim()), "block {i} differs");
         }
     }
 
     #[test]
     fn oversized_blocks_are_escaped_not_highlighted() {
-        let big = format!("```rust
-{}
-```
-", "let x = 1; // <tag>
-".repeat(20_000));
+        let big = format!("```rust\n{}\n```\n", "let x = 1; // <tag>\n".repeat(20_000));
         let html = render(&big, false);
         assert!(!html.contains("hl-"));
         assert!(html.contains("&lt;tag&gt;"));
@@ -429,8 +507,9 @@ mod bench {
                 .collect();
             times.sort_by(|a, b| a.partial_cmp(b).unwrap());
             let t = Instant::now();
-            std::hint::black_box(super::render(&text, false));
+            let html = super::render(&text, false);
             let warm = t.elapsed().as_secs_f64() * 1000.0;
+            println!("{name:>22}: html {:.2} MB ({:.1}x)", html.len() as f64 / 1e6, html.len() as f64 / text.len() as f64);
             println!("{name:>22}: cold median {:7.2} ms  min {:7.2} ms  warm cache {:7.2} ms", times[3], times[0], warm);
         }
     }

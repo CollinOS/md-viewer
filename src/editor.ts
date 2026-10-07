@@ -23,7 +23,6 @@ const highlight = HighlightStyle.define([
   { tag: t.monospace, color: "var(--hl-string)" },
   { tag: t.quote, color: "var(--fg-muted)" },
   { tag: [t.processingInstruction, t.meta, t.contentSeparator], color: "var(--fg-muted)" },
-  { tag: t.list, color: "var(--hl-keyword)" },
   { tag: t.comment, color: "var(--hl-comment)" },
   { tag: [t.labelName, t.atom], color: "var(--hl-attr)" },
 ]);
@@ -36,7 +35,7 @@ const theme = EditorView.theme({
     fontSize: "calc(var(--font-size, 16px) * 0.875)",
   },
   "&.cm-focused": { outline: "none" },
-  ".cm-scroller": { fontFamily: "var(--code-font)", lineHeight: "1.6" },
+  ".cm-scroller": { fontFamily: "var(--code-font)", lineHeight: "1.6", fontVariantLigatures: "none" },
   ".cm-content": { padding: "24px 0 50vh", caretColor: "var(--fg-strong)" },
   ".cm-line": { padding: "0 24px" },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--fg-strong)", borderLeftWidth: "2px" },
