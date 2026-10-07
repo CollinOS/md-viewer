@@ -1,0 +1,42 @@
+[package]
+name = "md-viewer"
+version = "0.1.0"
+description = "A fast markdown viewer and editor"
+edition = "2021"
+
+[lib]
+name = "md_viewer_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+comrak = { version = "0.56.0", default-features = false }
+dunce = "1.0.5"
+encoding_rs = "0.8.42"
+notify = "8.2.0"
+notify-debouncer-mini = "0.7.0"
+percent-encoding = "2.3.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+syntect = { version = "5.3.0", default-features = false, features = ["parsing", "html", "regex-onig"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+two-face = { version = "0.5.2", default-features = false, features = ["syntect-onig"] }
+xxhash-rust = { version = "0.8.19", features = ["xxh3"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
+
+[target."cfg(windows)".dependencies]
+winreg = "0.56.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"

@@ -1,0 +1,276 @@
+/* Every color in the app comes from these variables, so a theme is just a
+   set of values. Page backgrounds are duplicated in src-tauri/src/settings.rs
+   (theme_background) for the window color before first paint. */
+
+:root,
+[data-theme="github-light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-subtle: #f6f8fa;
+  --bg-chrome: #f6f8fa;
+  --bg-hover: #eaeef2;
+  --fg: #1f2328;
+  --fg-strong: #1f2328;
+  --fg-muted: #59636e;
+  --border: #d1d9e0;
+  --border-muted: #d1d9e0b3;
+  --accent: #0969da;
+  --mark: #fff8c5;
+  --selection: #0969da33;
+  --note: #0969da;
+  --tip: #1a7f37;
+  --important: #8250df;
+  --warning: #9a6700;
+  --caution: #d1242f;
+  --hl-comment: #59636e;
+  --hl-keyword: #cf222e;
+  --hl-string: #0a3069;
+  --hl-constant: #0550ae;
+  --hl-function: #8250df;
+  --hl-type: #953800;
+  --hl-tag: #116329;
+  --hl-attr: #0550ae;
+  --hl-inserted: #116329;
+  --hl-inserted-bg: #dafbe1;
+  --hl-deleted: #82071e;
+  --hl-deleted-bg: #ffebe9;
+  --hl-heading: #0550ae;
+}
+
+[data-theme="github-dark"] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --bg-subtle: #151b23;
+  --bg-chrome: #010409;
+  --bg-hover: #262c36;
+  --fg: #f0f6fc;
+  --fg-strong: #ffffff;
+  --fg-muted: #9198a1;
+  --border: #3d444d;
+  --border-muted: #3d444db3;
+  --accent: #4493f8;
+  --mark: #bb800926;
+  --selection: #4493f84d;
+  --note: #4493f8;
+  --tip: #3fb950;
+  --important: #ab7df8;
+  --warning: #d29922;
+  --caution: #f85149;
+  --hl-comment: #9198a1;
+  --hl-keyword: #ff7b72;
+  --hl-string: #a5d6ff;
+  --hl-constant: #79c0ff;
+  --hl-function: #d2a8ff;
+  --hl-type: #ffa657;
+  --hl-tag: #7ee787;
+  --hl-attr: #79c0ff;
+  --hl-inserted: #aff5b4;
+  --hl-inserted-bg: #033a16;
+  --hl-deleted: #ffdcd7;
+  --hl-deleted-bg: #67060c;
+  --hl-heading: #1f6feb;
+}
+
+[data-theme="solarized-light"] {
+  color-scheme: light;
+  --bg: #fdf6e3;
+  --bg-subtle: #eee8d5;
+  --bg-chrome: #eee8d5;
+  --bg-hover: #e4ddc8;
+  --fg: #586e75;
+  --fg-strong: #073642;
+  --fg-muted: #839496;
+  --border: #ddd6c1;
+  --border-muted: #ddd6c1b3;
+  --accent: #268bd2;
+  --mark: #b5890033;
+  --selection: #268bd233;
+  --note: #268bd2;
+  --tip: #859900;
+  --important: #6c71c4;
+  --warning: #b58900;
+  --caution: #dc322f;
+  --hl-comment: #93a1a1;
+  --hl-keyword: #859900;
+  --hl-string: #2aa198;
+  --hl-constant: #d33682;
+  --hl-function: #268bd2;
+  --hl-type: #b58900;
+  --hl-tag: #268bd2;
+  --hl-attr: #b58900;
+  --hl-inserted: #859900;
+  --hl-inserted-bg: #85990022;
+  --hl-deleted: #dc322f;
+  --hl-deleted-bg: #dc322f1a;
+  --hl-heading: #cb4b16;
+}
+
+[data-theme="solarized-dark"] {
+  color-scheme: dark;
+  --bg: #002b36;
+  --bg-subtle: #073642;
+  --bg-chrome: #00212b;
+  --bg-hover: #0b4352;
+  --fg: #93a1a1;
+  --fg-strong: #eee8d5;
+  --fg-muted: #6c8288;
+  --border: #0e4b5a;
+  --border-muted: #0e4b5ab3;
+  --accent: #2aa1e6;
+  --mark: #b5890040;
+  --selection: #268bd24d;
+  --note: #268bd2;
+  --tip: #859900;
+  --important: #6c71c4;
+  --warning: #b58900;
+  --caution: #dc322f;
+  --hl-comment: #657b83;
+  --hl-keyword: #859900;
+  --hl-string: #2aa198;
+  --hl-constant: #d33682;
+  --hl-function: #268bd2;
+  --hl-type: #b58900;
+  --hl-tag: #268bd2;
+  --hl-attr: #b58900;
+  --hl-inserted: #859900;
+  --hl-inserted-bg: #85990026;
+  --hl-deleted: #dc322f;
+  --hl-deleted-bg: #dc322f26;
+  --hl-heading: #cb4b16;
+}
+
+[data-theme="nord"] {
+  color-scheme: dark;
+  --bg: #2e3440;
+  --bg-subtle: #3b4252;
+  --bg-chrome: #272c36;
+  --bg-hover: #434c5e;
+  --fg: #d8dee9;
+  --fg-strong: #eceff4;
+  --fg-muted: #9aa3b5;
+  --border: #4c566a;
+  --border-muted: #4c566ab3;
+  --accent: #88c0d0;
+  --mark: #ebcb8b33;
+  --selection: #88c0d040;
+  --note: #81a1c1;
+  --tip: #a3be8c;
+  --important: #b48ead;
+  --warning: #ebcb8b;
+  --caution: #bf616a;
+  --hl-comment: #7b88a1;
+  --hl-keyword: #81a1c1;
+  --hl-string: #a3be8c;
+  --hl-constant: #b48ead;
+  --hl-function: #88c0d0;
+  --hl-type: #8fbcbb;
+  --hl-tag: #81a1c1;
+  --hl-attr: #8fbcbb;
+  --hl-inserted: #a3be8c;
+  --hl-inserted-bg: #a3be8c26;
+  --hl-deleted: #bf616a;
+  --hl-deleted-bg: #bf616a26;
+  --hl-heading: #88c0d0;
+}
+
+[data-theme="dracula"] {
+  color-scheme: dark;
+  --bg: #282a36;
+  --bg-subtle: #21222c;
+  --bg-chrome: #1e1f29;
+  --bg-hover: #44475a;
+  --fg: #f8f8f2;
+  --fg-strong: #ffffff;
+  --fg-muted: #9aa5ce;
+  --border: #44475a;
+  --border-muted: #44475ab3;
+  --accent: #8be9fd;
+  --mark: #f1fa8c33;
+  --selection: #bd93f94d;
+  --note: #8be9fd;
+  --tip: #50fa7b;
+  --important: #bd93f9;
+  --warning: #f1fa8c;
+  --caution: #ff5555;
+  --hl-comment: #6272a4;
+  --hl-keyword: #ff79c6;
+  --hl-string: #f1fa8c;
+  --hl-constant: #bd93f9;
+  --hl-function: #50fa7b;
+  --hl-type: #8be9fd;
+  --hl-tag: #ff79c6;
+  --hl-attr: #50fa7b;
+  --hl-inserted: #50fa7b;
+  --hl-inserted-bg: #50fa7b1f;
+  --hl-deleted: #ff5555;
+  --hl-deleted-bg: #ff55551f;
+  --hl-heading: #bd93f9;
+}
+
+[data-theme="gruvbox-dark"] {
+  color-scheme: dark;
+  --bg: #282828;
+  --bg-subtle: #32302f;
+  --bg-chrome: #1d2021;
+  --bg-hover: #3c3836;
+  --fg: #ebdbb2;
+  --fg-strong: #fbf1c7;
+  --fg-muted: #a89984;
+  --border: #504945;
+  --border-muted: #504945b3;
+  --accent: #83a598;
+  --mark: #fabd2f33;
+  --selection: #83a5984d;
+  --note: #83a598;
+  --tip: #b8bb26;
+  --important: #d3869b;
+  --warning: #fabd2f;
+  --caution: #fb4934;
+  --hl-comment: #928374;
+  --hl-keyword: #fb4934;
+  --hl-string: #b8bb26;
+  --hl-constant: #d3869b;
+  --hl-function: #fabd2f;
+  --hl-type: #8ec07c;
+  --hl-tag: #83a598;
+  --hl-attr: #fabd2f;
+  --hl-inserted: #b8bb26;
+  --hl-inserted-bg: #b8bb261f;
+  --hl-deleted: #fb4934;
+  --hl-deleted-bg: #fb49341f;
+  --hl-heading: #fe8019;
+}
+
+[data-theme="sepia"] {
+  color-scheme: light;
+  --bg: #f8f1e3;
+  --bg-subtle: #efe6d2;
+  --bg-chrome: #efe6d2;
+  --bg-hover: #e5dac2;
+  --fg: #433422;
+  --fg-strong: #2e2416;
+  --fg-muted: #7a6a55;
+  --border: #ddd0b6;
+  --border-muted: #ddd0b6b3;
+  --accent: #a0522d;
+  --mark: #e9c46a55;
+  --selection: #a0522d33;
+  --note: #1f5f8b;
+  --tip: #5b7a1f;
+  --important: #7a4b9e;
+  --warning: #a0661c;
+  --caution: #a0391c;
+  --hl-comment: #8a7a63;
+  --hl-keyword: #a0391c;
+  --hl-string: #5b7a1f;
+  --hl-constant: #7a4b9e;
+  --hl-function: #1f5f8b;
+  --hl-type: #a0661c;
+  --hl-tag: #1f5f8b;
+  --hl-attr: #a0661c;
+  --hl-inserted: #5b7a1f;
+  --hl-inserted-bg: #5b7a1f1f;
+  --hl-deleted: #a0391c;
+  --hl-deleted-bg: #a0391c1a;
+  --hl-heading: #7a3b10;
+}

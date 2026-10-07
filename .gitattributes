@@ -1,0 +1,2 @@
+# Encoding and line-ending fixtures must stay byte-exact.
+e2e/fixtures/** -text

@@ -1,0 +1,218 @@
+/* Document styles, modeled on GitHub's markdown rendering. */
+
+.markdown-body {
+  max-width: var(--content-width, 880px);
+  margin: 0 auto;
+  padding: 32px 40px 96px;
+  color: var(--fg);
+  font-family: var(--body-font);
+  font-size: var(--font-size, 16px);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+.markdown-body > *:first-child { margin-top: 0 !important; }
+.markdown-body > *:last-child { margin-bottom: 0 !important; }
+
+.markdown-body p,
+.markdown-body blockquote,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre,
+.markdown-body details,
+.markdown-body .markdown-alert {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  position: relative;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--fg-strong);
+  scroll-margin-top: 16px;
+}
+.markdown-body h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-muted); }
+.markdown-body h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-muted); }
+.markdown-body h3 { font-size: 1.25em; }
+.markdown-body h4 { font-size: 1em; }
+.markdown-body h5 { font-size: 0.875em; }
+.markdown-body h6 { font-size: 0.85em; color: var(--fg-muted); }
+
+/* Heading anchor link, shown on hover. */
+.markdown-body .anchor {
+  position: absolute;
+  left: -1.1em;
+  padding-right: 0.3em;
+  opacity: 0;
+  text-decoration: none;
+  color: var(--fg-muted);
+}
+.markdown-body .anchor::before { content: "#"; }
+.markdown-body h1:hover .anchor,
+.markdown-body h2:hover .anchor,
+.markdown-body h3:hover .anchor,
+.markdown-body h4:hover .anchor,
+.markdown-body h5:hover .anchor,
+.markdown-body h6:hover .anchor { opacity: 1; }
+
+.markdown-body a { color: var(--accent); text-decoration: none; }
+.markdown-body a:hover { text-decoration: underline; }
+
+.markdown-body strong { font-weight: 600; color: var(--fg-strong); }
+.markdown-body mark { background: var(--mark); color: inherit; }
+
+.markdown-body hr {
+  height: 0.25em;
+  margin: 24px 0;
+  padding: 0;
+  border: 0;
+  background: var(--border);
+}
+
+.markdown-body blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0 1em;
+  color: var(--fg-muted);
+  border-left: 0.25em solid var(--border);
+}
+
+.markdown-body ul,
+.markdown-body ol { padding-left: 2em; }
+.markdown-body li + li { margin-top: 0.25em; }
+.markdown-body li > p { margin-top: 16px; }
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ol,
+.markdown-body ol ul { margin-top: 0; margin-bottom: 0; }
+
+.markdown-body .contains-task-list { padding-left: 1.5em; }
+.markdown-body .task-list-item { list-style: none; }
+.markdown-body .task-list-item input[type="checkbox"] {
+  margin: 0 0.35em 0.25em -1.4em;
+  vertical-align: middle;
+  pointer-events: none;
+}
+
+.markdown-body img,
+.markdown-body video { max-width: 100%; box-sizing: content-box; }
+.markdown-body img[align="right"] { padding-left: 20px; }
+.markdown-body img[align="left"] { padding-right: 20px; }
+
+.markdown-body code,
+.markdown-body tt {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-family: var(--code-font);
+  font-size: 85%;
+  white-space: break-spaces;
+  background: var(--bg-subtle);
+  border-radius: 6px;
+}
+
+.markdown-body pre {
+  padding: 16px;
+  overflow: auto;
+  font-family: var(--code-font);
+  font-size: 85%;
+  line-height: 1.45;
+  background: var(--bg-subtle);
+  border-radius: 6px;
+}
+.markdown-body pre code {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.markdown-body table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.markdown-body th { font-weight: 600; }
+.markdown-body th,
+.markdown-body td { padding: 6px 13px; border: 1px solid var(--border); }
+.markdown-body tr { background: var(--bg); border-top: 1px solid var(--border-muted); }
+.markdown-body tr:nth-child(2n) { background: var(--bg-subtle); }
+
+.markdown-body details summary { cursor: pointer; }
+.markdown-body kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font: 11px var(--code-font);
+  line-height: 10px;
+  vertical-align: middle;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+}
+
+.markdown-body .footnotes {
+  font-size: 0.875em;
+  color: var(--fg-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 32px;
+  padding-top: 8px;
+}
+.markdown-body sup a { font-size: 0.8em; }
+
+/* GitHub alerts: > [!NOTE] and friends */
+.markdown-body .markdown-alert {
+  padding: 0.5em 1em;
+  border-left: 0.25em solid var(--alert);
+  color: inherit;
+}
+.markdown-body .markdown-alert > :last-child { margin-bottom: 0; }
+.markdown-body .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 500;
+  color: var(--alert);
+  margin-bottom: 4px;
+}
+.markdown-body .markdown-alert-note { --alert: var(--note); }
+.markdown-body .markdown-alert-tip { --alert: var(--tip); }
+.markdown-body .markdown-alert-important { --alert: var(--important); }
+.markdown-body .markdown-alert-warning { --alert: var(--warning); }
+.markdown-body .markdown-alert-caution { --alert: var(--caution); }
+
+/* Mermaid: source text until the diagram renders. */
+.markdown-body pre.mermaid {
+  background: transparent;
+  text-align: center;
+  color: var(--fg-muted);
+}
+.markdown-body pre.mermaid[data-processed] { color: inherit; }
+.markdown-body pre.mermaid svg { max-width: 100%; height: auto; }
+.markdown-body pre.mermaid.mermaid-error {
+  text-align: left;
+  color: var(--caution);
+  background: var(--bg-subtle);
+}
+
+/* Large documents: skip layout and paint for blocks that are off screen. */
+.markdown-body.large > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}

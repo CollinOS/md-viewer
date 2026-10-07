@@ -1,0 +1,51 @@
+/* Code highlighting. syntect emits one class per scope segment with an
+   "hl-" prefix, e.g. keyword.control.rust becomes
+   class="hl-keyword hl-control hl-rust". Colors come from the theme. */
+
+.hl-comment,
+.hl-punctuation.hl-definition.hl-comment { color: var(--hl-comment); font-style: italic; }
+
+.hl-keyword,
+.hl-storage { color: var(--hl-keyword); }
+.hl-keyword.hl-operator { color: inherit; }
+
+.hl-string,
+.hl-string .hl-punctuation { color: var(--hl-string); }
+.hl-string.hl-regexp,
+.hl-constant.hl-character.hl-escape { color: var(--hl-constant); }
+
+.hl-constant,
+.hl-support.hl-constant { color: var(--hl-constant); }
+
+.hl-entity.hl-name.hl-function,
+.hl-support.hl-function,
+.hl-meta.hl-function-call .hl-variable.hl-function { color: var(--hl-function); }
+
+.hl-entity.hl-name.hl-type,
+.hl-entity.hl-name.hl-class,
+.hl-entity.hl-name.hl-struct,
+.hl-entity.hl-name.hl-enum,
+.hl-entity.hl-name.hl-trait,
+.hl-entity.hl-other.hl-inherited-class,
+.hl-support.hl-type,
+.hl-support.hl-class,
+.hl-storage.hl-type { color: var(--hl-type); }
+
+.hl-variable.hl-parameter,
+.hl-variable.hl-language { color: var(--hl-type); }
+
+.hl-entity.hl-name.hl-tag { color: var(--hl-tag); }
+.hl-entity.hl-other.hl-attribute-name,
+.hl-support.hl-type.hl-property-name,
+.hl-meta.hl-mapping.hl-key .hl-string { color: var(--hl-attr); }
+
+.hl-markup.hl-heading,
+.hl-markup.hl-heading .hl-entity { color: var(--hl-heading); font-weight: 600; }
+.hl-markup.hl-bold { font-weight: 600; }
+.hl-markup.hl-italic { font-style: italic; }
+.hl-markup.hl-inserted { color: var(--hl-inserted); background: var(--hl-inserted-bg); }
+.hl-markup.hl-deleted { color: var(--hl-deleted); background: var(--hl-deleted-bg); }
+.hl-meta.hl-diff.hl-range,
+.hl-meta.hl-diff.hl-header { color: var(--hl-function); }
+
+.hl-invalid { color: var(--caution); }
