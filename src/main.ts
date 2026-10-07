@@ -190,7 +190,8 @@ async function closeTab(tab: Tab): Promise<boolean> {
     if (next) activate(next);
   }
   if (tabs.length === 0) {
-    await appWindow.destroy();
+    // close() rather than destroy() so Rust still saves the window position.
+    await appWindow.close();
     return true;
   }
   layout();

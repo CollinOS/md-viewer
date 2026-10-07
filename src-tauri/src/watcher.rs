@@ -80,6 +80,16 @@ pub fn on_file_changed(app: &AppHandle, path: &Path) {
     let bytes = match fs::read(path) {
         Ok(b) => b,
         Err(e) if e.kind() == ErrorKind::NotFound => {
+            {
+                // Forget the old hash so the file coming back, even with the
+                // same content, is reported and clears the missing state.
+                let mut docs = lock(&state.docs);
+                for (id, _, _) in &targets {
+                    if let Some(d) = docs.get_mut(id) {
+                        d.disk_hash = 0;
+                    }
+                }
+            }
             for (id, window, _) in &targets {
                 let _ = app.emit_to(window.as_str(), "doc-missing", *id);
             }
