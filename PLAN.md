@@ -1,12 +1,12 @@
 # md-viewer build plan
 
-A small, fast markdown viewer and editor for Windows, built with Tauri 2.
+A small, fast markdown viewer and editor for Windows and Linux, built with Tauri 2.
 
 Performance comes first. Markdown parsing and syntax highlighting happen in Rust, the frontend is plain TypeScript with no framework, and anything heavy (the editor, Mermaid) only loads when it's actually needed.
 
 ## Status
 
-All seven phases are built and covered by tests: 32 Rust unit tests and 49 end-to-end tests that drive the real app through WebView2's debugging port (`npm run test:rust`, `npm run test:e2e`).
+All seven phases are built and covered by tests: 33 Rust unit tests and 49 end-to-end tests that drive the real app through WebView2's debugging port (`npm run test:rust`, `npm run test:e2e`). Linux support was added in 0.1.1 (see below).
 
 Not covered by automated tests, so worth a quick manual check: the `Ctrl+O` file dialog (it's a native window the tests can't reach), dropping files onto the window, and double-clicking a `.md` file in Explorer after installing.
 
@@ -35,7 +35,7 @@ Measured on the release build with `node bench/startup.mjs`, `node e2e/run.mjs p
 
 ## Stack
 
-- **Shell:** Tauri 2 (WebView2 on Windows)
+- **Shell:** Tauri 2 (WebView2 on Windows, WebKitGTK on Linux)
 - **Markdown:** `comrak` with GFM extensions (tables, task lists, strikethrough, autolinks, footnotes, alerts, header IDs)
 - **Highlighting:** `syntect` plus `two-face` for the extended syntax set. Scopes are mapped to short token elements like `<hl-k>fn</hl-k>` through an internal theme, and colors come from CSS, so switching themes never re-renders. Code blocks are highlighted in parallel across cores and cached by content.
 - **File watching:** `notify` with a debouncer, watching each document's parent folder
@@ -104,9 +104,19 @@ Measured on the release build with `node bench/startup.mjs`, `node e2e/run.mjs p
 - [x] Editor and Mermaid in separate chunks; main bundle is 44 KB
 - [x] Background mode instead of an always-on pre-warmed window
 
+### Linux (0.1.1)
+- [x] Image URLs from `convertFileSrc`, since the protocol is `http://mdfile.localhost` on Windows and `mdfile://localhost` elsewhere
+- [x] Dark mode from the desktop portal, with a 150 ms timeout
+- [x] Leading-slash links resolve from the repo root on every platform
+- [x] Custom desktop entry with `%F`, so file managers pass the opened file
+- [x] CI: Rust tests on Windows and Ubuntu, a Linux smoke test under Xvfb (`e2e/smoke.mjs`), and a desktop entry check (`scripts/check-linux-packages.sh`)
+- [x] Release workflow: tag `v*` builds the NSIS installer plus deb, rpm and AppImage into a draft release
+- [ ] Try the Linux build on a real desktop (file manager integration, drag and drop, file dialog)
+- [ ] Port a subset of the e2e tests to Linux with tauri-driver
+
 ### Later, maybe
 - Find in the preview (`Ctrl+F` currently works in the editor only)
 - Table of contents sidebar
 - Recent files list
 - Export to HTML or PDF
-- Linux build through GitHub Actions
+- macOS build (needs the Apple open-file event, Cmd shortcuts, an app menu, and ideally signing and notarization)
