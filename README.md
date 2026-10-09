@@ -1,6 +1,6 @@
 # MD Viewer
 
-A small, fast markdown viewer and editor for Windows, built with Tauri 2.
+A small, fast markdown viewer and editor for Windows and Linux, built with Tauri 2.
 
 ![MD Viewer showing a markdown document in the GitHub Light theme](docs/screenshot-light.png)
 
@@ -8,7 +8,11 @@ Markdown is parsed and highlighted in Rust (comrak and syntect), and the UI is p
 
 ## Download
 
-Get the installer from the [latest release](https://github.com/CollinOS/md-viewer/releases/latest) and run it. It installs for your user account only, so it doesn't need admin rights. It runs on Windows 10 and 11, and if your machine doesn't have the WebView2 runtime (Windows 11 always does), the installer downloads it.
+Everything is on the [latest release](https://github.com/CollinOS/md-viewer/releases/latest) page.
+
+### Windows
+
+Download the `x64-setup.exe` file and run it. It installs for your user account only, so it doesn't need admin rights. It runs on Windows 10 and 11, and if your machine doesn't have the WebView2 runtime (Windows 11 always does), the installer downloads it.
 
 Two things to know on first run:
 
@@ -16,6 +20,16 @@ Two things to know on first run:
 - **Default app for `.md` files.** If you haven't chosen a default app for `.md` files, the installer makes MD Viewer the default. If you have, Windows keeps your choice. To switch later, right-click a `.md` file, pick **Open with**, choose MD Viewer or another app, and tick **Always**.
 
 To uninstall, use **Settings > Apps > Installed apps**.
+
+### Linux
+
+Pick the package for your distribution:
+
+- **Debian, Ubuntu, Mint:** `sudo apt install ./MD.Viewer_<version>_amd64.deb`
+- **Fedora, RHEL, openSUSE:** `sudo dnf install ./MD.Viewer-<version>-1.x86_64.rpm`
+- **Anything else:** the `.AppImage` bundles its dependencies. Make it executable with `chmod +x` and run it.
+
+The deb and rpm packages register MD Viewer for `.md` files, so it shows up under "Open with" in your file manager. The Linux builds are 64-bit x86 only, need a distribution from about 2022 or newer, and get less testing than Windows: CI builds them and checks that a document renders, but the full interactive test suite runs on Windows only.
 
 ## Features
 
@@ -54,7 +68,10 @@ Middle-click closes a tab, and tabs can be dragged to reorder them.
 
 ## Building from source
 
-Requirements: Rust (stable), Node 20+, and the MSVC C++ build tools (the "Desktop development with C++" workload, or `winget install Microsoft.VisualStudio.BuildTools` with the VC tools).
+Requirements: Rust (stable) and Node 20+, plus:
+
+- **Windows:** the MSVC C++ build tools (the "Desktop development with C++" workload, or `winget install Microsoft.VisualStudio.BuildTools` with the VC tools)
+- **Linux (Debian/Ubuntu):** `sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev`
 
 ```
 npm install
@@ -62,9 +79,9 @@ npm run tauri dev          # development, with hot reload for the frontend
 npm run tauri build        # release build and NSIS installer
 ```
 
-The installer ends up in `src-tauri/target/release/bundle/nsis/`.
+The packages end up in `src-tauri/target/release/bundle/`.
 
-Build from PowerShell or cmd rather than Git Bash. Git Bash ships its own `link.exe`, which shadows the MSVC linker.
+On Windows, build from PowerShell or cmd rather than Git Bash. Git Bash ships its own `link.exe`, which shadows the MSVC linker.
 
 To change the app icon, replace `app-icon.png` (a square PNG, 1024 px or larger, with a transparent background) and run `npx tauri icon app-icon.png` before building.
 
@@ -76,7 +93,11 @@ npm run build:debug        # debug build with the frontend embedded
 npm run test:e2e           # end-to-end suites against that build
 ```
 
-The end-to-end tests launch the real app with WebView2's remote debugging port open and drive it with Playwright, so they cover the actual Rust and webview behavior rather than a mock. Set `MDV_EXE` to test a different build.
+The end-to-end tests are Windows only. They launch the real app with WebView2's remote debugging port open and drive it with Playwright, so they cover the actual Rust and webview behavior rather than a mock. Set `MDV_EXE` to test a different build. On Linux, `node e2e/smoke.mjs <app binary>` starts the app on a sample document and checks that it rendered.
+
+## Releases
+
+Bump the version in `package.json`, `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`, then push a tag like `v0.2.0`. The release workflow builds the Windows installer and the Linux packages into a draft release on GitHub. Check it, then publish it.
 
 ## Performance
 
