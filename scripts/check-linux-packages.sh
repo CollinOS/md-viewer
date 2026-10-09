@@ -3,7 +3,7 @@
 # file from a file manager actually passes the file to the app.
 # Usage: scripts/check-linux-packages.sh <bundle dir>
 set -euo pipefail
-bundle="${1:?bundle directory}"
+bundle="$(cd "${1:?bundle directory}" && pwd)"
 fail=0
 
 check() {
