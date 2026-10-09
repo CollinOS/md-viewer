@@ -39,12 +39,16 @@
         "base-uri": "'none'",
         "form-action": "'none'"
       },
-      "dangerousDisableAssetCspModification": ["style-src"]
+      "dangerousDisableAssetCspModification": [
+        "style-src"
+      ]
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -54,7 +58,13 @@
     ],
     "fileAssociations": [
       {
-        "ext": ["md", "markdown", "mdown", "mkd", "mkdn"],
+        "ext": [
+          "md",
+          "markdown",
+          "mdown",
+          "mkd",
+          "mkdn"
+        ],
         "name": "Markdown document",
         "description": "Markdown document",
         "role": "Editor",
@@ -64,6 +74,19 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser"
+      }
+    },
+    "publisher": "Collin Osborne",
+    "category": "Productivity",
+    "shortDescription": "A fast markdown viewer and editor",
+    "longDescription": "A small, fast markdown viewer and editor. Renders GitHub-flavored markdown with highlighted code and Mermaid diagrams, reloads files when they change on disk, and has a split-view editor with live preview.",
+    "homepage": "https://github.com/CollinOS/md-viewer",
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/md-viewer.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/md-viewer.desktop"
       }
     }
   }

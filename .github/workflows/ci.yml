@@ -71,8 +71,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Build the app
-        run: npx tauri build --debug --no-bundle
+      - name: Build the app and a deb package
+        run: npx tauri build --debug --bundles deb
+
+      - name: Check the package desktop entry
+        run: scripts/check-linux-packages.sh src-tauri/target/debug/bundle
 
       # Starts the real app on a virtual display and checks that images,
       # highlighting and a Mermaid diagram rendered.

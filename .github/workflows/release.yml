@@ -55,3 +55,7 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: --bundles ${{ matrix.bundles }}
+
+      - name: Check the Linux packages
+        if: runner.os == 'Linux'
+        run: scripts/check-linux-packages.sh src-tauri/target/release/bundle
