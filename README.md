@@ -2,7 +2,20 @@
 
 A small, fast markdown viewer and editor for Windows, built with Tauri 2.
 
-Markdown is parsed and highlighted in Rust (comrak and syntect), and the UI is plain TypeScript with no framework. The editor (CodeMirror) and diagram support (Mermaid) only load when a document needs them, so opening a file to read it stays quick.
+![MD Viewer showing a markdown document in the GitHub Light theme](docs/screenshot-light.png)
+
+Markdown is parsed and highlighted in Rust (comrak and syntect), and the UI is plain TypeScript with no framework. The editor (CodeMirror) and diagram support (Mermaid) only load when a document needs them, so opening a file to read it stays quick. A 20 KB README opens in about 430 ms from a cold start, and in under 50 ms when the app is already running.
+
+## Download
+
+Get the installer from the [latest release](https://github.com/CollinOS/md-viewer/releases/latest) and run it. It installs for your user account only, so it doesn't need admin rights. It runs on Windows 10 and 11, and if your machine doesn't have the WebView2 runtime (Windows 11 always does), the installer downloads it.
+
+Two things to know on first run:
+
+- **SmartScreen warning.** The installer isn't code-signed, so Windows may say "Windows protected your PC". Click **More info**, then **Run anyway**.
+- **Default app for `.md` files.** If you haven't chosen a default app for `.md` files, the installer makes MD Viewer the default. If you have, Windows keeps your choice. To switch later, right-click a `.md` file, pick **Open with**, choose MD Viewer or another app, and tick **Always**.
+
+To uninstall, use **Settings > Apps > Installed apps**.
 
 ## Features
 
@@ -15,6 +28,11 @@ Markdown is parsed and highlighted in Rust (comrak and syntect), and the UI is p
 - Saves keep the file's original encoding (UTF-8, UTF-8 with BOM, UTF-16, Windows-1252) and line endings
 - Eight color schemes, separate picks for light and dark mode, adjustable accent, font and width
 - Double-clicking a `.md` file while the app is open adds a tab to the existing window
+- Optional "stay ready in the background" setting, so files open almost instantly after the last window is closed
+
+![Editing a document in the GitHub Dark theme, with the source on the left and the live preview on the right](docs/screenshot-editing.png)
+
+Try it on [`docs/demo.md`](docs/demo.md), which touches most of the features.
 
 ## Keyboard shortcuts
 
@@ -34,9 +52,9 @@ Markdown is parsed and highlighted in Rust (comrak and syntect), and the UI is p
 
 Middle-click closes a tab, and tabs can be dragged to reorder them.
 
-## Building
+## Building from source
 
-Requirements: Rust (stable), Node 20+, and the MSVC C++ build tools.
+Requirements: Rust (stable), Node 20+, and the MSVC C++ build tools (the "Desktop development with C++" workload, or `winget install Microsoft.VisualStudio.BuildTools` with the VC tools).
 
 ```
 npm install
@@ -44,9 +62,11 @@ npm run tauri dev          # development, with hot reload for the frontend
 npm run tauri build        # release build and NSIS installer
 ```
 
-The installer ends up in `src-tauri/target/release/bundle/nsis/`. It installs per user, so it doesn't need admin rights. Windows doesn't let an installer make itself the default app, so after installing, right-click a `.md` file, pick "Open with", choose MD Viewer and tick "Always".
+The installer ends up in `src-tauri/target/release/bundle/nsis/`.
 
 Build from PowerShell or cmd rather than Git Bash. Git Bash ships its own `link.exe`, which shadows the MSVC linker.
+
+To change the app icon, replace `app-icon.png` (a square PNG, 1024 px or larger, with a transparent background) and run `npx tauri icon app-icon.png` before building.
 
 ## Tests
 
@@ -62,4 +82,8 @@ The end-to-end tests launch the real app with WebView2's remote debugging port o
 
 `node bench/gen.mjs` creates large test documents in `bench/files`, then `node bench/startup.mjs` measures startup, opening files in a running instance and memory against the release build. Setting `MDV_PERF` to a file path makes the app log timing marks there.
 
-See `PLAN.md` for the targets and the latest measured numbers.
+See [`PLAN.md`](PLAN.md) for the targets, the measured numbers and the design decisions behind them.
+
+## License
+
+[MIT](LICENSE)
