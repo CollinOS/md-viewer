@@ -3,6 +3,7 @@
 // updates don't flicker or lose scroll position.
 
 import morphdom from "morphdom";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 /** Tags that could restyle or take over the app, which GitHub also strips. */
 const STRIP =
@@ -13,7 +14,8 @@ const MEDIA = "img[src],video[src],video[poster],audio[src],source[src],track[sr
 /** Above this many characters, off-screen blocks skip layout and paint. */
 const LARGE_DOC = 200_000;
 
-const PROTOCOL_BASE = "http://mdfile.localhost/";
+// "http://mdfile.localhost/" on Windows, "mdfile://localhost/" elsewhere.
+const PROTOCOL_BASE = convertFileSrc("", "mdfile");
 
 /** Rewrites a local image path to the mdfile protocol. Remote URLs are kept. */
 export function mediaUrl(docId: number, raw: string): string {

@@ -118,9 +118,15 @@ pub fn system_prefers_dark() -> bool {
         .unwrap_or(false)
 }
 
+/// On Linux this asks the desktop portal over D-Bus. It runs on a thread with
+/// a short timeout so a slow or missing portal can't hold up startup.
 #[cfg(not(windows))]
 pub fn system_prefers_dark() -> bool {
-    false
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let _ = tx.send(matches!(dark_light::detect(), Ok(dark_light::Mode::Dark)));
+    });
+    rx.recv_timeout(std::time::Duration::from_millis(150)).unwrap_or(false)
 }
 
 #[cfg(test)]

@@ -51,10 +51,18 @@ fn serve(state: Option<&AppState>, uri_path: &str) -> Response<Vec<u8>> {
 pub fn resolve(doc_path: &Path, rel: &str) -> PathBuf {
     let doc_dir = doc_path.parent().unwrap_or(Path::new(""));
     let as_path = Path::new(rel);
+    // A leading slash means the repo root, as on GitHub. On Linux and macOS
+    // that's also an absolute path, so fall back to it only if the repo
+    // version doesn't exist and the absolute one does.
+    if let Some(stripped) = rel.strip_prefix(['/', '\\']) {
+        let in_repo = project_root(doc_dir).join(stripped);
+        if !in_repo.exists() && as_path.is_absolute() && as_path.exists() {
+            return as_path.to_path_buf();
+        }
+        return in_repo;
+    }
     if as_path.is_absolute() {
         as_path.to_path_buf()
-    } else if let Some(stripped) = rel.strip_prefix(['/', '\\']) {
-        project_root(doc_dir).join(stripped)
     } else {
         doc_dir.join(rel)
     }
@@ -95,6 +103,18 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(not(windows))]
+    fn resolves_relative_to_document_unix() {
+        let doc = Path::new("/home/me/notes/guide/intro.md");
+        assert_eq!(resolve(doc, "img/a.png"), Path::new("/home/me/notes/guide/img/a.png"));
+        assert_eq!(resolve(doc, "../shared/b.png"), Path::new("/home/me/notes/guide/../shared/b.png"));
+        // An absolute path is used as-is, except a leading slash means the
+        // repo root, so this one resolves against the document's folder tree.
+        assert!(resolve(doc, "/pics/c.png").ends_with("pics/c.png"));
+    }
+
+    #[test]
+    #[cfg(windows)]
     fn resolves_relative_to_document() {
         let doc = Path::new(r"C:\notes\guide\intro.md");
         assert_eq!(resolve(doc, "img/a.png"), Path::new(r"C:\notes\guide\img/a.png"));
@@ -111,6 +131,15 @@ mod tests {
         std::fs::create_dir_all(repo.join("docs").join("deep")).unwrap();
         let doc = repo.join("docs").join("deep").join("x.md");
         assert_eq!(resolve(&doc, "/assets/logo.png"), repo.join("assets/logo.png"));
+    }
+
+    #[test]
+    fn absolute_paths_to_existing_files_still_work() {
+        let dir = tempfile::tempdir().unwrap();
+        let img = dir.path().join("pic.png");
+        std::fs::write(&img, b"x").unwrap();
+        let doc = Path::new("/somewhere/else/doc.md");
+        assert_eq!(resolve(doc, img.to_str().unwrap()), img);
     }
 
     #[test]

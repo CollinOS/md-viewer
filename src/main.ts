@@ -673,9 +673,22 @@ async function start() {
   await api.windowReady();
   testHooks.ready = true;
   requestAnimationFrame(() => mark("frontend: first frame"));
+  // With MDV_PERF set, log what actually rendered, for the Linux CI smoke test
+  // (which can't drive the webview the way the Windows tests do).
+  if (window.__MDV_BOOT__?.perf) setTimeout(selfCheck, 3000);
   // Warm the editor module in the background once the window is up, so the
   // first Ctrl+E is quick without slowing down startup.
   setTimeout(() => void loadEditor(), 1500);
+}
+
+function selfCheck() {
+  const a = active?.article;
+  const imgs = a ? [...a.querySelectorAll("img")] : [];
+  const loaded = imgs.filter((i) => i.complete && i.naturalWidth > 0).length;
+  mark(
+    `selfcheck tabs=${tabs.length} images=${loaded}/${imgs.length} tokens=${a?.querySelectorAll("hl-k, hl-s, hl-f").length ?? 0} ` +
+      `diagrams=${a?.querySelectorAll("pre.mermaid svg").length ?? 0} theme=${document.documentElement.dataset.theme}`,
+  );
 }
 
 // Exposed for the end-to-end tests.

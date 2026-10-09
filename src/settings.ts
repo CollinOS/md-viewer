@@ -26,7 +26,7 @@ export const THEMES: ThemeInfo[] = [
 const BODY_FONTS: Record<Settings["bodyFont"], string> = {
   sans: '-apple-system, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif',
   serif: 'Charter, "Iowan Old Style", Georgia, Cambria, "Times New Roman", serif',
-  mono: '"Cascadia Code", "Cascadia Mono", Consolas, ui-monospace, monospace',
+  mono: '"Cascadia Code", "Cascadia Mono", Consolas, "JetBrains Mono", "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace',
 };
 
 const systemDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");

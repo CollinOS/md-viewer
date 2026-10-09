@@ -1,6 +1,6 @@
 [package]
 name = "md-viewer"
-version = "0.1.0"
+version = "0.1.1"
 description = "A fast markdown viewer and editor"
 license = "MIT"
 repository = "https://github.com/CollinOS/md-viewer"
@@ -41,6 +41,9 @@ strip = true
 webview2-com = "0.39"
 windows-core = "0.62"
 winreg = "0.56.0"
+
+[target."cfg(not(windows))".dependencies]
+dark-light = "3"
 
 [dev-dependencies]
 tempfile = "3.27.0"

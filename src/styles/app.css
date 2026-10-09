@@ -4,7 +4,7 @@
 
 :root {
   --body-font: -apple-system, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --code-font: "Cascadia Code", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --code-font: "Cascadia Code", "Cascadia Mono", Consolas, "JetBrains Mono", "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace;
   --ui-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --tabbar-height: 38px;
 }
