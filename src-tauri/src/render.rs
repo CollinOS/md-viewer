@@ -354,12 +354,8 @@ pub fn render_doc(text: &str, lang: Option<&str>, sourcepos: bool) -> String {
         longest = longest.max(run);
     }
     let fence = "`".repeat(longest.max(2) + 1);
-    let newline = if text.ends_with('
-') || text.is_empty() { "" } else { "
-" };
-    render(&format!("{fence}{lang}
-{text}{newline}{fence}
-"), sourcepos)
+    let newline = if text.ends_with('\n') || text.is_empty() { "" } else { "\n" };
+    render(&format!("{fence}{lang}\n{text}{newline}{fence}\n"), sourcepos)
 }
 
 #[cfg(test)]
@@ -378,10 +374,7 @@ mod tests {
 
     #[test]
     fn source_files_render_as_one_code_block() {
-        let html = render_doc("# comment
-KEY=\"value\"
-TICKS=```
-", Some("dotenv"), false);
+        let html = render_doc("# comment\nKEY=\"value\"\nTICKS=```\n", Some("dotenv"), false);
         assert!(!html.contains("<h1"), "{html}");
         assert_eq!(html.matches("<pre").count(), 1, "{html}");
         assert!(html.contains("<hl-"), "dotenv not highlighted: {html}");
