@@ -69,6 +69,14 @@
         "description": "Markdown document",
         "role": "Editor",
         "mimeType": "text/markdown"
+      },
+      {
+        "ext": [
+          "env"
+        ],
+        "name": "Environment file",
+        "description": "Environment variables file",
+        "role": "Editor"
       }
     ],
     "windows": {

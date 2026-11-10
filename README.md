@@ -39,6 +39,7 @@ The deb and rpm packages register MD Viewer for `.md` files, so it shows up unde
 - Tabs, plus multiple windows (`Ctrl+Shift+N`)
 - Auto-reload when a file changes on disk, keeping your scroll position
 - Split-view editing with live preview (`Ctrl+E`) and `Ctrl+S` to save
+- Opens `.env` files too (`.env`, `.env.local`, `prod.env`), shown as highlighted source and editable the same way
 - Saves keep the file's original encoding (UTF-8, UTF-8 with BOM, UTF-16, Windows-1252) and line endings
 - Eight color schemes, separate picks for light and dark mode, adjustable accent, font and width
 - Double-clicking a `.md` file while the app is open adds a tab to the existing window

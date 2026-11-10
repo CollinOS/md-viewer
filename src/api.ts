@@ -41,6 +41,8 @@ export interface OpenedDoc {
   path: string;
   name: string;
   html: string;
+  /** Set for files shown as source (like `.env`) instead of rendered markdown. */
+  lang: string | null;
 }
 
 export type OpenOutcome =
@@ -59,7 +61,7 @@ export const api = {
   openDoc: (path: string) => invoke<OpenOutcome>("open_doc", { path }),
   closeDoc: (id: number) => invoke<void>("close_doc", { id }),
   pickFiles: () => invoke<string[]>("pick_files"),
-  render: (text: string, sourcepos: boolean) => invoke<string>("render_md", { text, sourcepos }),
+  render: (text: string, sourcepos: boolean, lang: string | null) => invoke<string>("render_md", { text, sourcepos, lang }),
   getText: (id: number) => invoke<string>("get_text", { id }),
   save: (id: number, text: string) => invoke<{ warning: string | null }>("save_doc", { id, text }),
   openLink: (id: number, href: string) => invoke<LinkAction>("open_link", { id, href }),

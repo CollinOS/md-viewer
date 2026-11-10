@@ -22,6 +22,8 @@ pub struct OpenedDoc {
     path: String,
     name: String,
     html: String,
+    /// Set for files shown as source (like `.env`) instead of markdown.
+    lang: Option<&'static str>,
 }
 
 #[derive(Serialize)]
@@ -58,8 +60,9 @@ fn attach(app: &AppHandle, state: &AppState, window: &str, mut loaded: Loaded) -
     let path = loaded.path.to_string_lossy().into_owned();
     let name = file_name(&loaded.path);
     let html = std::mem::take(&mut loaded.html);
+    let lang = loaded.lang;
     let id = state.register(loaded, window);
-    OpenOutcome::Opened(OpenedDoc { id, path, name, html })
+    OpenOutcome::Opened(OpenedDoc { id, path, name, html, lang })
 }
 
 fn failed(path: &Path, message: String) -> OpenOutcome {
@@ -113,6 +116,7 @@ pub async fn pick_files(window: WebviewWindow) -> Result<Vec<String>, ()> {
         .file()
         .set_parent(&window)
         .add_filter("Markdown", &["md", "markdown", "mdown", "mkd", "mkdn", "txt"])
+        .add_filter("Environment files", &["env"])
         .add_filter("All files", &["*"])
         .blocking_pick_files();
     Ok(picked
@@ -124,8 +128,8 @@ pub async fn pick_files(window: WebviewWindow) -> Result<Vec<String>, ()> {
 }
 
 #[tauri::command]
-pub async fn render_md(text: String, sourcepos: bool) -> Result<String, ()> {
-    Ok(render::render(&text, sourcepos))
+pub async fn render_md(text: String, sourcepos: bool, lang: Option<String>) -> Result<String, ()> {
+    Ok(render::render_doc(&text, lang.as_deref(), sourcepos))
 }
 
 #[tauri::command]
