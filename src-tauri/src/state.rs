@@ -34,6 +34,8 @@ pub struct Loaded {
     pub hash: u64,
     pub text: String,
     pub html: String,
+    /// Highlighting language when the file is shown as source, not markdown.
+    pub lang: Option<&'static str>,
 }
 
 pub type Prefetch = Vec<(PathBuf, JoinHandle<Result<Loaded, String>>)>;
@@ -81,8 +83,9 @@ pub fn load(path: &Path) -> Result<Loaded, String> {
     let bytes = fs::read(&path).map_err(|e| e.to_string())?;
     let hash = doc::hash(&bytes);
     let decoded = doc::decode(&bytes);
-    let html = render::render(&decoded.text, false);
-    Ok(Loaded { path, format: decoded.format, hash, text: decoded.text, html })
+    let lang = render::source_lang(&path);
+    let html = render::render_doc(&decoded.text, lang, false);
+    Ok(Loaded { path, format: decoded.format, hash, text: decoded.text, html, lang })
 }
 
 impl AppState {

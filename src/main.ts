@@ -22,6 +22,8 @@ interface Tab {
   id: number;
   path: string;
   name: string;
+  /** Highlighting language for source files, null for markdown. */
+  lang: string | null;
   article: HTMLElement;
   button: HTMLElement;
   scrollTop: number;
@@ -121,6 +123,7 @@ function addTab(doc: OpenedDoc): Tab {
     id: doc.id,
     path: doc.path,
     name: doc.name,
+    lang: doc.lang,
     article: createArticle(),
     button: null!,
     scrollTop: 0,
@@ -322,7 +325,7 @@ async function runRender(tab: Tab) {
   rendering = true;
   const started = performance.now();
   try {
-    const html = await api.render(state.doc.toString(), true);
+    const html = await api.render(state.doc.toString(), true, tab.lang);
     setContent(tab.article, html, tab.id, true);
     renderDiagrams(tab);
   } finally {
@@ -357,7 +360,7 @@ async function toggleEdit(tab: Tab | null = active) {
   const ed = await getEditor();
   if (!tab.editorState) {
     const text = await api.getText(tab.id);
-    tab.editorState = ed.createState(text);
+    tab.editorState = ed.createState(text, tab.lang);
     tab.savedDoc = tab.editorState.doc;
   }
   tab.editing = true;

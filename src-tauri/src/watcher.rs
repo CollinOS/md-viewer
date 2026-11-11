@@ -104,7 +104,7 @@ pub fn on_file_changed(app: &AppHandle, path: &Path) {
     }
 
     let decoded = doc::decode(&bytes);
-    let html = render::render(&decoded.text, false);
+    let html = render::render_doc(&decoded.text, render::source_lang(path), false);
     for (id, window, _) in targets {
         {
             let mut docs = lock(&state.docs);

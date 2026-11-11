@@ -1,10 +1,11 @@
-// The markdown editor. Loaded with a dynamic import the first time someone
-// presses Ctrl+E, so viewing never pays for CodeMirror.
+// The editor, for markdown and source files like .env. Loaded with a
+// dynamic import the first time someone presses Ctrl+E, so viewing never
+// pays for CodeMirror.
 
 import { EditorState, Text, type Extension } from "@codemirror/state";
 import { EditorView, drawSelection, highlightActiveLine, keymap, dropCursor } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { HighlightStyle, StreamLanguage, syntaxHighlighting } from "@codemirror/language";
 import { markdown } from "@codemirror/lang-markdown";
 import { highlightSelectionMatches, search, searchKeymap } from "@codemirror/search";
 import { tags as t } from "@lezer/highlight";
@@ -25,7 +26,52 @@ const highlight = HighlightStyle.define([
   { tag: [t.processingInstruction, t.meta, t.contentSeparator], color: "var(--fg-muted)" },
   { tag: t.comment, color: "var(--hl-comment)" },
   { tag: [t.labelName, t.atom], color: "var(--hl-attr)" },
+  { tag: t.propertyName, color: "var(--hl-attr)" },
+  { tag: t.string, color: "var(--hl-string)" },
+  { tag: [t.keyword, t.operator], color: "var(--fg-muted)" },
 ]);
+
+// .env files: comments, an optional `export`, KEY=value, quoted values.
+const dotenv = StreamLanguage.define<{ inValue: boolean }>({
+  name: "dotenv",
+  startState: () => ({ inValue: false }),
+  token(stream, state) {
+    if (stream.sol()) state.inValue = false;
+    if (stream.eatSpace()) return null;
+    if (!state.inValue) {
+      if (stream.peek() === "#") {
+        stream.skipToEnd();
+        return "comment";
+      }
+      if (stream.match(/^export(?=\s)/)) return "keyword";
+      if (stream.match(/^[^=\s#]+/)) return "propertyName";
+      if (stream.eat("=")) {
+        state.inValue = true;
+        return "operator";
+      }
+      stream.next();
+      return null;
+    }
+    const quote = stream.peek();
+    if (quote === '"' || quote === "'" || quote === "`") {
+      stream.next();
+      let escaped = false;
+      let ch: string | void;
+      while ((ch = stream.next()) != null) {
+        if (ch === quote && !escaped) break;
+        escaped = !escaped && ch === "\\";
+      }
+      return "string";
+    }
+    if (stream.peek() === "#") {
+      stream.skipToEnd();
+      return "comment";
+    }
+    stream.eatWhile(/[^\s#]/);
+    return "string";
+  },
+  languageData: { commentTokens: { line: "#" } },
+});
 
 const theme = EditorView.theme({
   "&": {
@@ -55,6 +101,7 @@ const theme = EditorView.theme({
 export class Editor {
   readonly view: EditorView;
   private readonly extensions: Extension[];
+  private readonly markdownLang = markdown();
 
   constructor(parent: HTMLElement, cb: EditorCallbacks) {
     this.extensions = [
@@ -65,7 +112,6 @@ export class Editor {
       highlightSelectionMatches(),
       search({ top: true }),
       EditorView.lineWrapping,
-      markdown(),
       syntaxHighlighting(highlight),
       theme,
       keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab]),
@@ -85,8 +131,10 @@ export class Editor {
     );
   }
 
-  createState(text: string): EditorState {
-    return EditorState.create({ doc: text, extensions: this.extensions });
+  /** `lang` is null for markdown, or the language of a source file. */
+  createState(text: string, lang: string | null = null): EditorState {
+    const language = lang === "dotenv" ? dotenv : this.markdownLang;
+    return EditorState.create({ doc: text, extensions: [...this.extensions, language] });
   }
 
   focus() {

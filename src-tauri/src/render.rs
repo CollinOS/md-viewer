@@ -8,6 +8,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::{self, Write};
+use std::path::Path;
 use std::sync::{Arc, Mutex, OnceLock};
 
 use comrak::adapters::{CodefenceRendererAdapter, SyntaxHighlighterAdapter};
@@ -332,9 +333,53 @@ pub fn render(markdown: &str, sourcepos: bool) -> String {
     out
 }
 
+/// The highlighting language for files shown as source code instead of
+/// rendered markdown, or `None` for markdown. Picked by file name, since
+/// `.env` and `.env.local` have no extension `Path` recognizes.
+pub fn source_lang(path: &Path) -> Option<&'static str> {
+    let name = path.file_name()?.to_str()?.to_ascii_lowercase();
+    let is_env = name == ".env" || name.starts_with(".env.") || name.ends_with(".env");
+    is_env.then_some("dotenv")
+}
+
+/// Renders a document: markdown as usual, or a source file as one
+/// highlighted code block.
+pub fn render_doc(text: &str, lang: Option<&str>, sourcepos: bool) -> String {
+    let Some(lang) = lang else { return render(text, sourcepos) };
+    // The fence must be longer than any run of backticks in the file.
+    let mut longest = 0;
+    let mut run = 0;
+    for c in text.chars() {
+        run = if c == '`' { run + 1 } else { 0 };
+        longest = longest.max(run);
+    }
+    let fence = "`".repeat(longest.max(2) + 1);
+    let newline = if text.ends_with('\n') || text.is_empty() { "" } else { "\n" };
+    render(&format!("{fence}{lang}\n{text}{newline}{fence}\n"), sourcepos)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn env_files_are_source() {
+        for name in [".env", ".env.local", ".ENV.production", "prod.env"] {
+            assert_eq!(source_lang(Path::new(name)), Some("dotenv"), "{name}");
+        }
+        for name in ["README.md", "env.md", "environment.txt", ".envrc"] {
+            assert_eq!(source_lang(Path::new(name)), None, "{name}");
+        }
+    }
+
+    #[test]
+    fn source_files_render_as_one_code_block() {
+        let html = render_doc("# comment\nKEY=\"value\"\nTICKS=```\n", Some("dotenv"), false);
+        assert!(!html.contains("<h1"), "{html}");
+        assert_eq!(html.matches("<pre").count(), 1, "{html}");
+        assert!(html.contains("<hl-"), "dotenv not highlighted: {html}");
+        assert!(html.contains("TICKS=```"), "{html}");
+    }
 
     #[test]
     fn gfm_features() {
